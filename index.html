@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UptimePro - Professional Website Monitoring</title>
+    <meta name="description" content="Monitor your websites 24/7 with instant alerts, detailed analytics, and global monitoring. Protect your revenue and reputation with enterprise-grade uptime monitoring.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* Custom animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Custom gradient backgrounds */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Status indicators */
+        .status-up {
+            background-color: #dcfce7;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+
+        .status-down {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+
+        .status-unknown {
+            background-color: #f3f4f6;
+            color: #374151;
+            border-color: #d1d5db;
+        }
+
+        /* Button styles */
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            transform: scale(1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: #374151;
+            font-weight: 600;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            transition: all 0.2s;
+            transform: scale(1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f9fafb;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Card hover effects */
+        .card-hover {
+            transition: all 0.3s;
+            transform: scale(1);
+        }
+
+        .card-hover:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        /* Responsive text */
+        @media (max-width: 640px) {
+            .text-responsive-xl {
+                font-size: 2rem;
+                line-height: 2.5rem;
+            }
+            
+            .text-responsive-lg {
+                font-size: 1.5rem;
+                line-height: 2rem;
+            }
+        }
+
+        @media (min-width: 641px) {
+            .text-responsive-xl {
+                font-size: 3rem;
+                line-height: 3.5rem;
+            }
+            
+            .text-responsive-lg {
+                font-size: 2rem;
+                line-height: 2.5rem;
+            }
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            z-index: 1000;
+            max-width: 400px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .toast.error {
+            border-left: 4px solid #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 text-blue-600 text-2xl">🛡️</div>
+                    <span class="text-2xl font-bold gradient-text">UptimePro</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showAuthModal()" class="text-gray-600 hover:text-gray-900 font-medium">
+                        Sign In
+                    </button>
+                    <button onclick="showAuthModal()" class="btn-primary">
+                        Start Free Trial
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative py-20 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100"></div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center animate-fadeInUp">
+                <h1 class="text-responsive-xl font-bold text-gray-900 mb-6">
+                    Never Miss Website Downtime Again
+                </h1>
+                <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                    Monitor your websites 24/7 with instant alerts, detailed analytics, and global monitoring. 
+                    Protect your revenue and reputation with enterprise-grade uptime monitoring.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                    <button onclick="showAuthModal()" class="btn-primary text-lg">
+                        Start 14-Day Free Trial
+                        <span class="ml-2">→</span>
+                    </button>
+                    <button onclick="showDemo()" class="btn-secondary text-lg">
+                        View Live Demo
+                    </button>
+                </div>
+                
+                <!-- Trust Indicators -->
+                <div class="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <span class="text-green-500 mr-2">✓</span>
+                        No credit card required
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-green-500 mr-2">✓</span>
+                        Setup in 2 minutes
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-green-500 mr-2">✓</span>
+                        Cancel anytime
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-blue-600 mb-2">50,000+</div>
+                    <div class="text-gray-600">Websites Monitored</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-green-600 mb-2">99.9%</div>
+                    <div class="text-gray-600">Average Uptime</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-purple-600 mb-2">12,000+</div>
+                    <div class="text-gray-600">Happy Customers</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-orange-600 mb-2">1.2M+</div>
+                    <div class="text-gray-600">Checks Performed</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                    Everything You Need to Monitor Your Websites
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Comprehensive monitoring tools designed to keep your websites running smoothly
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                    <div class="text-blue-600 mb-4 text-4xl">🖥️</div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Real-time Monitoring</h3>
+                    <p class="text-gray-600">Monitor your websites 24/7 with checks as frequent as every 30 seconds</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                    <div class="text-blue-600 mb-4 text-4xl">🔔</div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Instant Alerts</h3>
+                    <p class="text-gray-600">Get notified immediately via email, SMS, Slack, or webhooks when issues occur</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                    <div class="text-blue-600 mb-4 text-4xl">🌐</div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Global Monitoring</h3>
+                    <p class="text-gray-600">Check your sites from multiple locations worldwide for accurate results</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                    <div class="text-blue-600 mb-4 text-4xl">📊</div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Detailed Analytics</h3>
+                    <p class="text-gray-600">Comprehensive uptime reports and performance analytics</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                    <div class="text-blue-600 mb-4 text-4xl">🛡️</div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">SSL Monitoring</h3>
+                    <p class="text-gray-600">Monitor SSL certificates and get alerts before they expire</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                    <div class="text-blue-600 mb-4 text-4xl">⚡</div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">API Access</h3>
+                    <p class="text-gray-600">Full REST API access for custom integrations and automation</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
+                <p class="text-xl text-gray-600 mb-8">Choose the plan that fits your needs. Upgrade or downgrade anytime.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Free Plan -->
+                <div class="border-2 border-gray-200 rounded-xl p-6">
+                    <div class="text-center mb-8">
+                        <div class="text-4xl mb-4">⭐</div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Free</h3>
+                        <div class="mb-2">
+                            <span class="text-4xl font-bold text-gray-900">$0</span>
+                            <span class="text-gray-500 ml-1">/month</span>
+                        </div>
+                    </div>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">5 websites</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">Checks every 30 minutes</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">7-day history</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">Email alerts</span>
+                        </li>
+                    </ul>
+                    <button onclick="showAuthModal()" class="w-full btn-primary">Get Started Free</button>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="border-2 border-blue-500 rounded-xl p-6 relative bg-blue-50">
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Most Popular</span>
+                    </div>
+                    <div class="text-center mb-8">
+                        <div class="text-4xl mb-4">⚡</div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
+                        <div class="mb-2">
+                            <span class="text-4xl font-bold text-gray-900">$9.99</span>
+                            <span class="text-gray-500 ml-1">/month</span>
+                        </div>
+                    </div>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">50 websites</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">Checks every 5 minutes</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">90-day history</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">Email & SMS alerts</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">API access</span>
+                        </li>
+                    </ul>
+                    <button onclick="showAuthModal()" class="w-full btn-primary">Start Free Trial</button>
+                </div>
+
+                <!-- Business Plan -->
+                <div class="border-2 border-gray-200 rounded-xl p-6">
+                    <div class="text-center mb-8">
+                        <div class="text-4xl mb-4">👑</div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Business</h3>
+                        <div class="mb-2">
+                            <span class="text-4xl font-bold text-gray-900">$29.99</span>
+                            <span class="text-gray-500 ml-1">/month</span>
+                        </div>
+                    </div>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">200 websites</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">Checks every 1 minute</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">1-year history</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">All alert types</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">Custom integrations</span>
+                        </li>
+                    </ul>
+                    <button onclick="showAuthModal()" class="w-full btn-primary">Start Free Trial</button>
+                </div>
+
+                <!-- Enterprise Plan -->
+                <div class="border-2 border-gray-200 rounded-xl p-6">
+                    <div class="text-center mb-8">
+                        <div class="text-4xl mb-4">🚀</div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
+                        <div class="mb-2">
+                            <span class="text-4xl font-bold text-gray-900">$99.99</span>
+                            <span class="text-gray-500 ml-1">/month</span>
+                        </div>
+                    </div>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">1000+ websites</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">Checks every 30 seconds</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">Unlimited history</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">White-label solution</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span class="text-gray-700">Dedicated support</span>
+                        </li>
+                    </ul>
+                    <button onclick="showAuthModal()" class="w-full btn-primary">Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
+        <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-white mb-4">Ready to Protect Your Website?</h2>
+            <p class="text-xl text-blue-100 mb-8">Start your free 14-day trial today. No credit card required.</p>
+            <button onclick="showAuthModal()" class="bg-white text-blue-600 font-bold py-4 px-8 rounded-lg text-lg hover:bg-gray-100 transition-colors transform hover:scale-105">
+                Start Free Trial Now
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <span class="text-2xl">🛡️</span>
+                        <span class="text-xl font-bold">UptimePro</span>
+                    </div>
+                    <p class="text-gray-400">Professional website monitoring for businesses of all sizes.</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Product</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Features</a></li>
+                        <li><a href="#" class="hover:text-white">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white">API</a></li>
+                        <li><a href="#" class="hover:text-white">Integrations</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Support</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Documentation</a></li>
+                        <li><a href="#" class="hover:text-white">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white">Contact</a></li>
+                        <li><a href="#" class="hover:text-white">Status</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Company</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">About</a></li>
+                        <li><a href="#" class="hover:text-white">Blog</a></li>
+                        <li><a href="#" class="hover:text-white">Privacy</a></li>
+                        <li><a href="#" class="hover:text-white">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 UptimePro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
+            <button onclick="hideAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            
+            <div class="p-8">
+                <div class="text-center mb-8">
+                    <h2 id="authTitle" class="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+                    <p id="authSubtitle" class="text-gray-600">Sign in to access your dashboard</p>
+                </div>
+
+                <form id="authForm" class="space-y-6">
+                    <div id="usernameField" style="display: none;">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                        <input type="text" id="username" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Enter your username">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Enter your email" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Enter your password" required minlength="6">
+                    </div>
+
+                    <button type="submit" id="authSubmit" class="w-full btn-primary py-3">Sign In</button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600">
+                        <span id="authSwitchText">Don't have an account?</span>
+                        <button onclick="toggleAuthMode()" id="authSwitchButton" class="ml-2 text-blue-600 hover:text-blue-700 font-semibold">Sign Up</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toastContainer"></div>
+
+    <script>
+        let isLoginMode = true;
+        let currentUser = null;
+
+        // Check if user is logged in
+        window.addEventListener('load', function() {
+            const apiKey = localStorage.getItem('apiKey');
+            if (apiKey) {
+                fetchProfile(apiKey);
+            }
+        });
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600 text-xl">×</button>
+                </div>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.parentElement.removeChild(toast);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        function showAuthModal() {
+            document.getElementById('authModal').classList.add('show');
+        }
+
+        function hideAuthModal() {
+            document.getElementById('authModal').classList.remove('show');
+        }
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            const title = document.getElementById('authTitle');
+            const subtitle = document.getElementById('authSubtitle');
+            const usernameField = document.getElementById('usernameField');
+            const submitButton = document.getElementById('authSubmit');
+            const switchText = document.getElementById('authSwitchText');
+            const switchButton = document.getElementById('authSwitchButton');
+
+            if (isLoginMode) {
+                title.textContent = 'Welcome Back';
+                subtitle.textContent = 'Sign in to access your dashboard';
+                usernameField.style.display = 'none';
+                submitButton.textContent = 'Sign In';
+                switchText.textContent = "Don't have an account?";
+                switchButton.textContent = 'Sign Up';
+            } else {
+                title.textContent = 'Create Account';
+                subtitle.textContent = 'Start monitoring your websites today';
+                usernameField.style.display = 'block';
+                submitButton.textContent = 'Create Account';
+                switchText.textContent = 'Already have an account?';
+                switchButton.textContent = 'Sign In';
+            }
+        }
+
+        function showDemo() {
+            showToast('Demo feature coming soon! Sign up for free trial instead.');
+            setTimeout(() => showAuthModal(), 1000);
+        }
+
+        async function fetchProfile(apiKey) {
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    headers: { 'X-API-Key': apiKey }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data;
+                    showDashboard();
+                } else {
+                    localStorage.removeItem('apiKey');
+                }
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+                localStorage.removeItem('apiKey');
+            }
+        }
+
+        function showDashboard() {
+            // Redirect to dashboard view
+            window.location.href = '/dashboard';
+        }
+
+        document.getElementById('authForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitButton = document.getElementById('authSubmit');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = isLoginMode ? 'Signing In...' : 'Creating Account...';
+            submitButton.disabled = true;
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value;
+
+            try {
+                const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
+                const body = isLoginMode ? 
+                    { email, password } : 
+                    { username, email, password };
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (isLoginMode) {
+                        localStorage.setItem('apiKey', data.api_key);
+                        showToast('Login successful!');
+                        hideAuthModal();
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        showToast('Registration successful! Please log in.');
+                        toggleAuthMode();
+                        document.getElementById('authForm').reset();
+                    }
+                } else {
+                    showToast(data.error || 'Operation failed', 'error');
+                }
+            } catch (error) {
+                showToast('Network error. Please try again.', 'error');
+            } finally {
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('authModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideAuthModal();
+            }
+        });
+    </script>
+</body>
+</html>
+
